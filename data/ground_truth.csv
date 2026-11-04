@@ -1,0 +1,6 @@
+anomaly_type,table,record_id,description
+close_before_creation,opportunities,OPP-2025-000001,Expected close date precedes creation date
+mixed_currency,opportunities,OPP-2025-000002,EUR opportunity in USD-only baseline
+stage_probability_mismatch,forecast_snapshots,FCST-2025-01-31-001,Win probability does not match stage
+duplicate_opportunity_counted,forecast_snapshots,FCST-DUPLICATE-001,Opportunity appears twice in one snapshot
+future_leakage,forecast_snapshots,FCST-2025-01-31-003,Snapshot uses a stage recorded after its snapshot date

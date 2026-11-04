@@ -1,0 +1,8 @@
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.13.1
+scikit-learn==1.5.2
+pytest>=8,<10
+
+##Check the remaining Python modules
+##wc -l src/forecast.py src/scenarios.py src/database.py src/evaluate.py app.py tests/*.py requirements.txt

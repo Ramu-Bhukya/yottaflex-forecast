@@ -1,0 +1,57 @@
+{
+  "seed": 20261022,
+  "generated_at_utc": "2026-11-04T17:38:19.515132+00:00",
+  "data_directory": "data/raw",
+  "files": [
+    {
+      "file": "accounts.csv",
+      "rows": 2000,
+      "sha256": "97873d77cfaec7516fbad01ab61d552c5d473c0ed44a0370cbab89b765c7f224"
+    },
+    {
+      "file": "activities.csv",
+      "rows": 100125,
+      "sha256": "79bf989767dbc28efd8110382c62eb4367677ec16c2e72c2f612e78cce66fef7"
+    },
+    {
+      "file": "forecast_snapshots.csv",
+      "rows": 16254,
+      "sha256": "4489c51d4025554c701eb03f9ec1bc92df7d5b93bfc0f17b00c4e8e4f2bc5f77"
+    },
+    {
+      "file": "historical_bookings.csv",
+      "rows": 6782,
+      "sha256": "e51aa37c14deef7a5719c6c87b1aa9305ed3c836eb911aa98f1f08ef6191b457"
+    },
+    {
+      "file": "opportunities.csv",
+      "rows": 20000,
+      "sha256": "89ddca66355030f1f5fc189d6ec6e5f9e22763a9e194d1ad0e5fb028f98f5c7f"
+    },
+    {
+      "file": "quotas.csv",
+      "rows": 16000,
+      "sha256": "7268918e46a1421f958fb5aadb177c3a7011e2f13a329f9292ac57e93591a8a5"
+    },
+    {
+      "file": "sales_reps.csv",
+      "rows": 2000,
+      "sha256": "b97c9cfb3a8c381c2b59af999a6ea521427cbb740d35b8f5630643809142ef1f"
+    },
+    {
+      "file": "stage_history.csv",
+      "rows": 66101,
+      "sha256": "6ae08523cce2d89d622c74413b6e6d8991d7797a5f2a860e365207f24eae5845"
+    },
+    {
+      "file": "stages.csv",
+      "rows": 6,
+      "sha256": "6a814828d512c3c5738dccdcbf6ef42694e0f739e3e6dae6e01ad69c7a4adfa8"
+    },
+    {
+      "file": "territories.csv",
+      "rows": 4,
+      "sha256": "498df8f77ba70cf9063f931412880b3c9e9c034d364c5455829eeacf0b4cc0cc"
+    }
+  ]
+}
