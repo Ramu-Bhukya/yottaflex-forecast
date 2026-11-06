@@ -1,226 +1,3 @@
-<!-- # YottaFlex Revenue Forecasting Data Platform
-
-A reproducible synthetic sales data platform for revenue forecasting, historical pipeline analysis, data-quality validation, and forecast evaluation.
-
-Built as an AI Forward Deployed Engineer take-home project.
-
-## Project Overview
-
-This project generates a relational sales dataset with opportunities, accounts, representatives, stage transitions, activities, quotas, bookings, and historical forecast snapshots.
-
-The platform supports:
-
-- Deterministic synthetic data generation
-- Starter and full-scale datasets
-- Historical, as-of forecast snapshots
-- Stage-weighted pipeline forecasting
-- Forecast accuracy evaluation
-- Five deliberately injected data-quality anomalies
-- Automated anomaly detection and integrity checks
-- SHA-256 checksums for reproducibility
-
-## Dataset Scale
-
-| Entity | Starter Scale | Full Scale |
-|---|---:|---:|
-| Sales representatives | 20 | 2,000 |
-| Accounts | 20 | 2,000 |
-| Opportunities | 200 | 20,000 |
-| Territories | 4 | 4 |
-| Stages | 6 | 6 |
-| Quotas | 160 | 16,000 |
-
-The full-scale generation also produced:
-
-- 66,101 stage-history records
-- 100,125 activity records
-- 6,782 historical bookings
-- 16,254 forecast snapshot records
-
-These counts are specific to the current generator implementation and seed.
-
-## Technology
-
-- Python 3.12
-- pandas
-- NumPy
-- pytest
-- CSV and JSON
-
-## Setup
-
-Create and activate a virtual environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-## Generate Data
-
-Generate the starter dataset:
-
-```bash
-python -m src.generate_data --scale starter
-```
-
-Generate the full dataset:
-
-```bash
-python -m src.generate_data --scale full
-```
-
-The generator uses the fixed random seed `20261022`.
-
-Generated CSV files are written to `data/raw/`.
-
-**Note:** Running either command overwrites the existing CSV files in `data/raw/`.
-
-## Forecasting Method
-
-The baseline forecast uses stage-weighted pipeline values:
-
-**Forecast amount = Opportunity amount × Stage win probability**
-
-Stage probabilities:
-
-| Stage | Probability |
-|---|---:|
-| Prospecting | 10% |
-| Qualification | 25% |
-| Proposal | 50% |
-| Negotiation | 80% |
-| Closed Won | 100% |
-| Closed Lost | 0% |
-
-Historical snapshots use the latest stage recorded as of each snapshot date. They also record deal age and completed activity counts.
-
-The current baseline uses stage probabilities directly. Deal age and activity counts are available as features but are not yet incorporated into the probability formula.
-
-## Forecast Evaluation
-
-Run:
-
-```bash
-python -m src.evaluate
-```
-
-The evaluator matches each forecast opportunity to its actual booking outcome within the relevant forecast horizon.
-
-Outputs:
-
-- `data/processed/forecast_accuracy.csv`
-- `data/processed/forecast_evaluation_detail.csv`
-
-Metrics include forecast error, percentage error, bias, and opportunity-level weighted absolute percentage error (WAPE).
-
-Incomplete quarters are excluded from finalized accuracy calculations.
-
-The evaluation measures accuracy for opportunities included in each snapshot. It should not be interpreted as total company revenue forecast accuracy.
-
-## Data-Quality Anomalies
-
-Five anomalies are deliberately injected:
-
-1. Expected close date before opportunity creation
-2. Mixed currency in the USD baseline
-3. Stage probability mismatch
-4. Duplicate opportunity in a forecast snapshot
-5. Future-stage information leakage
-
-Inject anomalies:
-
-```bash
-python -m src.inject_anomalies
-```
-
-This creates corrupted copies in `data/anomalies/`.
-
-Expected labels are stored separately in `data/ground_truth.csv`.
-
-The clean dataset in `data/raw/` is not modified by anomaly injection.
-
-## Validation
-
-Validate the clean dataset:
-
-```bash
-python -m src.validate --data-dir data/raw
-```
-
-Validate the corrupted dataset:
-
-```bash
-python -m src.validate --data-dir data/anomalies
-```
-
-Check primary and foreign keys:
-
-```bash
-python -m src.check_integrity
-```
-
-Check booking arithmetic and lifecycle rules:
-
-```bash
-python -m src.check_business_rules
-```
-
-Run automated validation tests:
-
-```bash
-python -m pytest tests/test_validation.py -v
-```
-
-In the verified full-scale run:
-
-- Clean dataset: 0 targeted anomaly-rule violations
-- Corrupted dataset: all 5 injected anomalies detected
-- Primary and foreign-key checks: passed
-- Six business-rule checks: passed
-- Automated validation tests: 4 passed
-
-## Reproducibility
-
-Create the SHA-256 manifest:
-
-```bash
-python -m src.manifest
-```
-
-The manifest is written to `data/manifest.json` and contains the row count and SHA-256 checksum for each clean CSV.
-
-Regenerating the full dataset with the same seed produced identical SHA-256 checksums for all 10 CSV files.
-
-## Documentation
-
-- `docs/schema.md` — entity relationships and schema structure
-- `docs/data_dictionary.md` — table and field definitions
-- `docs/assumptions.md` — generation assumptions and modeling limitations
-
-## Known Limitations
-
-- The baseline forecast is stage-weighted rather than a fully calibrated predictive model.
-- Opportunity age and activity counts are recorded but not yet used to adjust win probabilities.
-- Snapshot evaluation measures a defined opportunity cohort, not all company bookings.
-- The current generator simulates actual close-date delays but does not maintain historical revisions to expected close dates.
-- The data is synthetic and is not intended to represent actual YottaFlex customers or business performance.
-
-## License and Use
-
-This repository is a technical demonstration using synthetic data. It is not affiliated with or endorsed by YottaFlex.
-
-
-
-wc -l README.md  -->
-
-
 # YottaFlex Sales Forecasting POC
 
 ## 1. What Is This Project?
@@ -396,7 +173,29 @@ This can help a sales team understand whether its forecasting assumptions are to
 
 The current evaluation focuses on opportunities that were already present in a historical snapshot. It does not measure every possible source of company revenue.
 
-## 8. What Data Problems Can the System Detect?
+## 8. Experimental Historical Forecast and Results
+
+In addition to the baseline, `src/improved_forecast.py` implements an **experimental heuristic**, not a trained machine-learning model. It uses stage-specific historical win/loss outcomes, deal age, and activity count to adjust the stage probabilities. Historical outcomes are included only once their close dates are known at the forecast snapshot date; final opportunity stages are not used as snapshot-time features. Historical observations are drawn from earlier stage snapshots of completed opportunities, so the resulting conversion estimates may be affected by selection bias.
+
+`src/compare_forecasts.py` evaluates both methods on the same snapshot opportunities, counting actual bookings strictly after each snapshot and no later than the end of that quarter. Incomplete 2026 Q4 is excluded. WAPE is computed from opportunity-level absolute errors divided by total actual bookings; bias compares total predicted and actual bookings.
+
+**Observed results on the synthetic full-scale dataset:**
+
+| Quarter | Baseline WAPE | Experimental WAPE | Baseline bias | Experimental bias |
+|---|---:|---:|---:|---:|
+| 2025 Q1 | 130.94% | 133.22% | -7.99% | -3.66% |
+| 2025 Q2 | 114.00% | 147.44% | 7.59% | 69.94% |
+| 2025 Q3 | 106.01% | 127.42% | 8.48% | 48.87% |
+| 2025 Q4 | 104.11% | 120.84% | 4.56% | 39.06% |
+| 2026 Q1 | 118.77% | 138.40% | 17.23% | 55.75% |
+| 2026 Q2 | 105.66% | 123.26% | 11.63% | 46.10% |
+| 2026 Q3 | 100.67% | 115.93% | 0.30% | 32.68% |
+
+The **baseline has lower WAPE in all seven completed quarters**. The experimental model tends to overpredict, so it is retained for transparency and further research, **not recommended as the better-performing model**. These are retrospective results on synthetic data, not an independent holdout evaluation. Neither model has been demonstrated to be accurate on real customer data. The evaluation covers only opportunities present in each snapshot and their within-quarter bookings, not total company revenue.
+
+Two focused tests in `tests/test_improved_forecast.py` passed independently: one verifies that changing a future outcome does not alter an earlier forecast in a minimal example; the other checks forecast arithmetic and probability bounds. These tests do not prove comprehensive point-in-time correctness. The original suite of 18 tests also passed; run `python -m pytest -q` to confirm the combined suite in your own environment.
+
+## 9. What Data Problems Can the System Detect?
 
 Real sales data is not always clean.
 
@@ -418,7 +217,7 @@ The corrupted copy is saved separately so the validation system can be tested sa
 
 All five intentional errors were detected in our validation tests.
 
-## 9. How Is the Project Organized?
+## 10. How Is the Project Organized?
 
 ```text
 yottaflex-forecast/
@@ -428,6 +227,8 @@ yottaflex-forecast/
 │   ├── forecast.py       Calculates expected revenue
 │   ├── scenarios.py      Creates three forecast scenarios
 │   ├── evaluate.py       Checks forecast accuracy
+│   ├── improved_forecast.py  Experimental historical forecast
+│   ├── compare_forecasts.py  Compares baseline and experiment
 │   ├── inject_anomalies.py
 │   │                     Adds intentional data mistakes
 │   ├── validate.py       Finds data problems
@@ -439,7 +240,7 @@ yottaflex-forecast/
 │   └── check_business_rules.py
 │                         Checks sales-data rules
 │
-├── tests/                Automated tests
+├── tests/                Automated tests (including test_improved_forecast.py)
 ├── docs/                 Technical documentation
 ├── data/
 │   ├── raw/              Original generated data
@@ -450,7 +251,7 @@ yottaflex-forecast/
 └── README.md             This guide
 ```
 
-## 10. How to Run the Project
+## 11. How to Run the Project
 
 You need Python installed on your computer.
 
@@ -522,6 +323,15 @@ Results are saved in:
 - `data/processed/forecast_accuracy.csv`
 - `data/processed/forecast_evaluation_detail.csv`
 
+### Optional: Run the experimental forecasting comparison
+
+```bash
+python -m src.improved_forecast
+python -m src.compare_forecasts
+```
+
+These commands create `data/processed/improved_forecast_detail.csv`, `improved_forecast_summary.csv`, `forecast_model_comparison.csv`, and `forecast_comparison_detail.csv`. Run the full-scale data generation first. The experimental model does **not** replace the baseline.
+
 ### Step 8: Check the data
 
 ```bash
@@ -564,7 +374,7 @@ python -m pytest tests/ -v
 
 This checks that the major parts of the project are working as expected.
 
-## 11. What Results Did We Verify?
+## 12. What Results Did We Verify?
 
 The following results were verified during development:
 
@@ -582,13 +392,14 @@ The following results were verified during development:
 | Three-scenario forecast records | 48,762 |
 | SQLite export | Verified |
 | JSON export | 10 files verified |
-| Automated tests | 18 passed |
+| Existing automated tests | 18 passed |
+| Additional experimental forecast tests | 2 passed separately |
 
 The project uses a fixed random seed, `20261022`, so the same full-scale data can be generated again.
 
 The system also checks SHA-256 file hashes to confirm that regenerated CSV files match the expected results.
 
-## 12. What Has Not Been Built Yet?
+## 13. What Has Not Been Built Yet?
 
 This is a working POC, not a finished enterprise product.
 
@@ -596,8 +407,8 @@ The following features are not yet implemented:
 
 - A working web dashboard or user interface
 - A REST API
-- A machine-learning forecasting model
-- Automatically learned win probabilities
+- A trained machine-learning forecasting model
+- Validated and calibrated learned win probabilities (an experimental historical-rate heuristic is included)
 - Statistical confidence intervals
 - Full historical tracking of territory and salesperson changes
 - Historical tracking of every expected close-date revision
@@ -605,18 +416,18 @@ The following features are not yet implemented:
 
 These would be reasonable next steps for a production system.
 
-## 13. What Would We Improve Next?
+## 14. What Would We Improve Next?
 
 If this POC were expanded, the next improvements would be:
 
 1. **Build a dashboard** so sales leaders can view forecasts without running Python commands.
 2. **Improve forecast accuracy** by learning from historical sales outcomes.
-3. **Use more sales signals**, such as deal age, recent activities, and customer history.
+3. **Validate more sales signals**, including deal age, recent activities, and customer history, before using them in production forecasts.
 4. **Track changing deal dates** to understand which opportunities are slipping.
 5. **Add more detailed reporting** by sales team, territory, product, and forecast horizon.
 6. **Add automated monitoring** to alert users when data quality becomes poor.
 
-## 14. Why This POC Matters
+## 15. Why This POC Matters
 
 This project shows that a company can build a structured process for working with sales forecasts.
 
@@ -631,7 +442,7 @@ Instead of manually calculating forecasts from disconnected spreadsheets, the sy
 
 The POC provides a foundation for a more advanced forecasting application.
 
-## 15. Additional Documentation
+## 16. Additional Documentation
 
 More detailed technical information is available in:
 
