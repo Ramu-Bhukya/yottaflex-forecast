@@ -453,3 +453,60 @@ More detailed technical information is available in:
 ---
 
 **Important:** All data in this project is synthetic. This POC is a demonstration and does not use real YottaFlex customer, pipeline, or revenue information.
+
+## Forecast Accuracy by Segment and Horizon
+
+Run:
+
+```bash
+python -m src.segment_accuracy
+```
+
+This generates `data/processed/forecast_accuracy_by_segment.csv`.
+
+The report compares baseline and experimental forecasts across:
+
+- **Territory:** East, North, South, West
+- **Product:** AI Platform, Analytics Suite, Data Integration, Enterprise Support
+- **Forecast horizon:** Days remaining until quarter end
+
+The report includes predicted bookings, actual bookings, forecast error, percentage bias, and opportunity-level WAPE.
+
+The baseline model achieved lower WAPE than the experimental model across every reported territory, product, and horizon group.
+
+**Limitation:** Territory segmentation uses the representative's current territory assignment rather than a historically effective-dated assignment.
+
+## Historical Point-in-Time Validation
+
+Run:
+
+```bash
+python -m src.check_point_in_time
+```
+
+This verifies historical snapshot consistency for:
+
+- Opportunity creation dates
+- Historical opportunity stages
+- Activity counts as of the snapshot date
+- Deal age calculations
+
+**Verified results:** All five checks passed across 16,254 forecast snapshots, with zero inconsistencies.
+
+The experimental forecasting code also filters historical training outcomes by `actual_close_date <= snapshot_date`. Snapshot consistency checks and the existing unit tests provide evidence against future-data leakage, but do not constitute an exhaustive leakage audit.
+
+## Automated Test Results
+
+Run:
+
+```bash
+python -m pytest -q
+```
+
+Latest verified result:
+
+```text
+20 passed in 94.35s
+```
+
+All 20 automated tests passed on November 5, 2026.
